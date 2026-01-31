@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gym Weight Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: #667eea;
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            background: white;
+            color: #667eea;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .tab:hover:not(.active) {
+            transform: translateY(-2px);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .add-section {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .input-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .workouts-section {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .day-group {
+            margin-bottom: 30px;
+        }
+
+        .day-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .day-title {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .day-date {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .workout-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .workout-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .exercise-name {
+            font-weight: 700;
+            font-size: 18px;
+            color: #333;
+        }
+
+        .workout-time {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .workout-details {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+
+        .detail-item {
+            font-size: 14px;
+            color: #555;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .delete-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 5px;
+            font-size: 12px;
+            cursor: pointer;
+            margin-top: 10px;
+            width: auto;
+        }
+
+        .delete-btn:hover {
+            background: #c82333;
+            transform: none;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        .plan-section {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .plan-day {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 5px solid #667eea;
+        }
+
+        .plan-day h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 22px;
+        }
+
+        .exercise-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .exercise-table th,
+        .exercise-table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .exercise-table th {
+            background: #667eea;
+            color: white;
+            font-weight: 600;
+        }
+
+        .exercise-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .tips-section {
+            background: #fff9e6;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border-left: 4px solid #ffc107;
+        }
+
+        .tips-section h4 {
+            color: #f57c00;
+            margin-bottom: 10px;
+        }
+
+        .tips-section ul {
+            margin-left: 20px;
+            line-height: 1.6;
+        }
+
+        .quick-add-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .quick-day-btn {
+            background: #e0e7ff;
+            color: #667eea;
+            border: 2px solid #667eea;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            width: auto;
+        }
+
+        .quick-day-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .quick-day-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .clear-all-btn {
+            background: #6c757d;
+            margin-top: 10px;
+        }
+
+        .notification-banner {
+            background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+            color: #333;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(255, 193, 7, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .notification-banner.success {
+            background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+            color: white;
+        }
+
+        .notification-icon {
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        .notification-content {
+            flex: 1;
+        }
+
+        .notification-title {
+            font-weight: 700;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+
+        .notification-text {
+            font-size: 14px;
+            opacity: 0.95;
+        }
+
+        .notification-close {
+            background: rgba(0,0,0,0.1);
+            border: none;
+            color: inherit;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            padding: 0;
+        }
+
+        .notification-close:hover {
+            background: rgba(0,0,0,0.2);
+            transform: none;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .input-group {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .tabs {
+                flex-wrap: wrap;
+            }
+
+            .tab {
+                flex: 1;
+                min-width: 120px;
+            }
+
+            .exercise-table {
+                font-size: 12px;
+            }
+
+            .exercise-table th,
+            .exercise-table td {
+                padding: 8px 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💪 Gym Weight Tracker</h1>
+            <p class="subtitle">Track your progress, crush your goals</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="tracker.switchTab('track')">Track Workout</button>
+            <button class="tab" onclick="tracker.switchTab('history')">History</button>
+            <button class="tab" onclick="tracker.switchTab('plan')">Workout Plan</button>
+        </div>
+
+        <div id="trackTab" class="tab-content active">
+            <div id="notificationArea"></div>
+            <div class="add-section">
+                <h2 style="margin-bottom: 20px; color: #333;">Add Workout</h2>
+                <div class="quick-add-buttons">
+                    <button class="quick-day-btn" onclick="tracker.selectDay('Day A')">Day A - Push + Legs</button>
+                    <button class="quick-day-btn" onclick="tracker.selectDay('Day B')">Day B - Pull + Legs</button>
+                    <button class="quick-day-btn" onclick="tracker.selectDay('Day C')">Day C - Full Upper</button>
+                    <button class="quick-day-btn" onclick="tracker.selectDay('Custom')">Custom</button>
+                </div>
+                <form id="workoutForm">
+                    <div class="form-group">
+                        <label for="workoutDay">Workout Day</label>
+                        <select id="workoutDay" required>
+                            <option value="">Select Day</option>
+                            <option value="Day A">Day A - Push + Legs</option>
+                            <option value="Day B">Day B - Pull + Legs</option>
+                            <option value="Day C">Day C - Full Upper</option>
+                            <option value="Custom">Custom</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="exercise">Exercise</label>
+                        <input type="text" id="exercise" placeholder="e.g., Bench Press, Squat" required>
+                    </div>
+                    <div class="input-group">
+                        <div class="form-group">
+                            <label for="weight">Weight (kg)</label>
+                            <input type="number" id="weight" placeholder="0" step="0.5" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="sets">Sets</label>
+                            <input type="number" id="sets" placeholder="0" min="1" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="reps">Reps</label>
+                            <input type="number" id="reps" placeholder="0" min="1" required>
+                        </div>
+                    </div>
+                    <button type="submit">Add Workout</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="historyTab" class="tab-content">
+            <div class="workouts-section">
+                <div class="stats-grid" id="statsGrid"></div>
+                <h2 style="margin-bottom: 20px; color: #333;">Workout History</h2>
+                <div id="workoutsList"></div>
+            </div>
+        </div>
+
+        <div id="planTab" class="tab-content">
+            <div class="plan-section">
+                <h2 style="margin-bottom: 20px; color: #333;">Your 12-Week Workout Plan</h2>
+                
+                <div class="tips-section">
+                    <h4>💡 Progressive Overload Guidelines</h4>
+                    <ul>
+                        <li>Start with a weight you can lift with good form, leaving 1–2 reps in the tank</li>
+                        <li>Each week: If you complete all reps comfortably, add 1–2 kg per dumbbell/barbell</li>
+                        <li>Compound lifts: 6–12 reps | Accessory/isolation: 12–20 reps</li>
+                        <li>Weeks 1–4: Focus on form | Weeks 5–8: Add 5–10% weight | Weeks 9–12: Push close to max</li>
+                    </ul>
+                </div>
+
+                <div class="plan-day">
+                    <h3>DAY A – PUSH + LEGS (≈45 min)</h3>
+                    <table class="exercise-table">
+                        <thead>
+                            <tr>
+                                <th>Exercise</th>
+                                <th>Sets × Reps</th>
+                                <th>Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Bench Press / Dumbbell Press</td>
+                                <td>4×8–12</td>
+                                <td>Chest + triceps</td>
+                            </tr>
+                            <tr>
+                                <td>Overhead Press</td>
+                                <td>3×8–12</td>
+                                <td>Shoulders + triceps</td>
+                            </tr>
+                            <tr>
+                                <td>Incline Dumbbell Press</td>
+                                <td>3×10–12</td>
+                                <td>Upper chest</td>
+                            </tr>
+                            <tr>
+                                <td>Goblet Squats / Dumbbell Squats</td>
+                                <td>3×10–12</td>
+                                <td>Legs stimulus</td>
+                            </tr>
+                            <tr>
+                                <td>Lunges (Walking / Stationary)</td>
+                                <td>2×10 per leg</td>
+                                <td>Light lower body work</td>
+                            </tr>
+                            <tr>
+                                <td>Lateral Raises</td>
+                                <td>2×15</td>
+                                <td>Side delts</td>
+                            </tr>
+                            <tr>
+                                <td>Optional: Plank</td>
+                                <td>2×45 sec</td>
+                                <td>Core</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="plan-day">
+                    <h3>DAY B – PULL + LEGS (≈45 min)</h3>
+                    <table class="exercise-table">
+                        <thead>
+                            <tr>
+                                <th>Exercise</th>
+                                <th>Sets × Reps</th>
+                                <th>Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Pull-Ups / Assisted Pull-Ups</td>
+                                <td>4×6–10</td>
+                                <td>Back + biceps</td>
+                            </tr>
+                            <tr>
+                                <td>Barbell / Dumbbell Rows</td>
+                                <td>3×8–12</td>
+                                <td>Mid-back</td>
+                            </tr>
+                            <tr>
+                                <td>Face Pulls / Rear Delt Fly</td>
+                                <td>3×12–15</td>
+                                <td>Rear delts + posture</td>
+                            </tr>
+                            <tr>
+                                <td>Romanian Deadlifts</td>
+                                <td>3×8–12</td>
+                                <td>Hamstrings + glutes</td>
+                            </tr>
+                            <tr>
+                                <td>Calf Raises</td>
+                                <td>3×15–20</td>
+                                <td>Quick lower body</td>
+                            </tr>
+                            <tr>
+                                <td>Bicep Curls</td>
+                                <td>3×12–15</td>
+                                <td>Arms</td>
+                            </tr>
+                            <tr>
+                                <td>Hammer Curls</td>
+                                <td>2×12–15</td>
+                                <td>Forearms & biceps</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="plan-day">
+                    <h3>DAY C – FULL UPPER + QUICK LEGS (≈40–45 min)</h3>
+                    <table class="exercise-table">
+                        <thead>
+                            <tr>
+                                <th>Exercise</th>
+                                <th>Sets × Reps</th>
+                                <th>Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Pull-Ups / Chin-Ups</td>
+                                <td>3×6–10</td>
+                                <td>Back + biceps</td>
+                            </tr>
+                            <tr>
+                                <td>Bench Press / Dumbbell Press</td>
+                                <td>3×8–12</td>
+                                <td>Chest + triceps</td>
+                            </tr>
+                            <tr>
+                                <td>Overhead Press</td>
+                                <td>3×8–12</td>
+                                <td>Shoulders</td>
+                            </tr>
+                            <tr>
+                                <td>Barbell / Dumbbell Rows</td>
+                                <td>3×8–12</td>
+                                <td>Mid-back</td>
+                            </tr>
+                            <tr>
+                                <td>Goblet Squats</td>
+                                <td>3×10–12</td>
+                                <td>Quick leg stimulus</td>
+                            </tr>
+                            <tr>
+                                <td>Lateral Raises</td>
+                                <td>2×15</td>
+                                <td>Side delts</td>
+                            </tr>
+                            <tr>
+                                <td>Optional: Plank / Hanging Leg Raises</td>
+                                <td>2×45 sec / 2×12</td>
+                                <td>Core</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="tips-section">
+                    <h4>📅 Weekly Schedule</h4>
+                    <ul>
+                        <li><strong>2 days/week:</strong> Day A + Day B</li>
+                        <li><strong>3 days/week:</strong> Day A → Day B → Day C</li>
+                        <li><strong>Rest:</strong> At least 1 day between sessions</li>
+                    </ul>
+                </div>
+
+                <div class="tips-section">
+                    <h4>✨ Extra Tips</h4>
+                    <ul>
+                        <li>Focus on slow, controlled movement, especially on eccentric phase</li>
+                        <li>Sleep 7–9 hours, eat protein-rich meals</li>
+                        <li>Don't skip carbs on training days</li>
+                        <li>Optional: short HIIT cardio 1–2×/week if you want to stay lean</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class GymTracker {
+            constructor() {
+                this.workouts = this.loadWorkouts();
+                this.currentTab = 'track';
+                this.render();
+                this.attachEventListeners();
+            }
+
+            loadWorkouts() {
+                const data = localStorage.getItem('gymWorkouts');
+                return data ? JSON.parse(data) : [];
+            }
+
+            saveWorkouts() {
+                localStorage.setItem('gymWorkouts', JSON.stringify(this.workouts));
+            }
+
+            selectDay(day) {
+                document.getElementById('workoutDay').value = day;
+                const buttons = document.querySelectorAll('.quick-day-btn');
+                buttons.forEach(btn => btn.classList.remove('active'));
+                event.target.classList.add('active');
+            }
+
+            addWorkout(exercise, weight, sets, reps, workoutDay) {
+                const workout = {
+                    id: Date.now(),
+                    exercise: exercise,
+                    weight: parseFloat(weight),
+                    sets: parseInt(sets),
+                    reps: parseInt(reps),
+                    workoutDay: workoutDay,
+                    date: new Date().toISOString()
+                };
+                this.workouts.unshift(workout);
+                this.saveWorkouts();
+                
+                // Check for progressive overload opportunity
+                this.checkProgressiveOverload(exercise, weight, sets, reps);
+                
+                this.render();
+            }
+
+            checkProgressiveOverload(currentExercise, currentWeight, currentSets, currentReps) {
+                // Find previous workouts for the same exercise
+                const previousWorkouts = this.workouts
+                    .filter(w => w.exercise.toLowerCase() === currentExercise.toLowerCase() && w.id !== this.workouts[0].id)
+                    .slice(0, 3); // Look at last 3 times doing this exercise
+
+                if (previousWorkouts.length >= 2) {
+                    // Check if user has done the same weight for 2+ consecutive sessions
+                    const sameWeight = previousWorkouts.every(w => w.weight === parseFloat(currentWeight));
+                    const completedAllReps = previousWorkouts.every(w => w.sets >= currentSets && w.reps >= currentReps);
+
+                    if (sameWeight && completedAllReps) {
+                        const newWeight = parseFloat(currentWeight) + 1; // Suggest 1kg increase
+                        this.showNotification(
+                            '💪 Ready to Level Up!',
+                            `You've completed ${currentExercise} at ${currentWeight}kg for ${previousWorkouts.length + 1} sessions. Try ${newWeight}kg next time!`,
+                            'success'
+                        );
+                    }
+                }
+            }
+
+            showNotification(title, message, type = 'info') {
+                const notificationArea = document.getElementById('notificationArea');
+                const notification = document.createElement('div');
+                notification.className = `notification-banner ${type}`;
+                notification.innerHTML = `
+                    <div class="notification-icon">${type === 'success' ? '🎯' : '💡'}</div>
+                    <div class="notification-content">
+                        <div class="notification-title">${title}</div>
+                        <div class="notification-text">${message}</div>
+                    </div>
+                    <button class="notification-close" onclick="this.parentElement.remove()">×</button>
+                `;
+                
+                notificationArea.innerHTML = ''; // Clear previous notifications
+                notificationArea.appendChild(notification);
+
+                // Auto-remove after 10 seconds
+                setTimeout(() => {
+                    if (notification.parentElement) {
+                        notification.remove();
+                    }
+                }, 10000);
+            }
+
+            deleteWorkout(id) {
+                this.workouts = this.workouts.filter(w => w.id !== id);
+                this.saveWorkouts();
+                this.render();
+            }
+
+            clearAll() {
+                if (confirm('Are you sure you want to delete all workouts?')) {
+                    this.workouts = [];
+                    this.saveWorkouts();
+                    this.render();
+                }
+            }
+
+            getStats() {
+                const totalWorkouts = this.workouts.length;
+                const totalVolume = this.workouts.reduce((sum, w) => sum + (w.weight * w.sets * w.reps), 0);
+                const uniqueExercises = new Set(this.workouts.map(w => w.exercise)).size;
+                const maxWeight = this.workouts.length > 0 ? Math.max(...this.workouts.map(w => w.weight)) : 0;
+                
+                // Get unique days worked out
+                const uniqueDays = new Set(this.workouts.map(w => new Date(w.date).toDateString())).size;
+                
+                return { totalWorkouts, totalVolume, uniqueExercises, maxWeight, uniqueDays };
+            }
+
+            groupWorkoutsByDay() {
+                const groups = {};
+                this.workouts.forEach(workout => {
+                    const date = new Date(workout.date).toDateString();
+                    if (!groups[date]) {
+                        groups[date] = [];
+                    }
+                    groups[date].push(workout);
+                });
+                return groups;
+            }
+
+            switchTab(tab) {
+                this.currentTab = tab;
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                
+                event.target.classList.add('active');
+                document.getElementById(tab + 'Tab').classList.add('active');
+                
+                if (tab === 'history') {
+                    this.render();
+                }
+            }
+
+            render() {
+                this.renderStats();
+                this.renderWorkouts();
+            }
+
+            renderStats() {
+                const stats = this.getStats();
+                const statsGrid = document.getElementById('statsGrid');
+                
+                if (this.workouts.length === 0) {
+                    statsGrid.innerHTML = '';
+                    return;
+                }
+
+                statsGrid.innerHTML = `
+                    <div class="stat-card">
+                        <div class="stat-value">${stats.totalWorkouts}</div>
+                        <div class="stat-label">Total Exercises</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${stats.uniqueDays}</div>
+                        <div class="stat-label">Days Trained</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${stats.totalVolume.toLocaleString()}</div>
+                        <div class="stat-label">Total Volume (kg)</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${stats.maxWeight}</div>
+                        <div class="stat-label">Max Weight (kg)</div>
+                    </div>
+                `;
+            }
+
+            renderWorkouts() {
+                const list = document.getElementById('workoutsList');
+                
+                if (this.workouts.length === 0) {
+                    list.innerHTML = `
+                        <div class="empty-state">
+                            <p>No workouts yet. Start tracking!</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const groupedWorkouts = this.groupWorkoutsByDay();
+                const sortedDates = Object.keys(groupedWorkouts).sort((a, b) => new Date(b) - new Date(a));
+
+                list.innerHTML = sortedDates.map(dateStr => {
+                    const workouts = groupedWorkouts[dateStr];
+                    const date = new Date(dateStr);
+                    const formattedDate = date.toLocaleDateString('en-US', { 
+                        weekday: 'long',
+                        month: 'short', 
+                        day: 'numeric', 
+                        year: 'numeric' 
+                    });
+                    
+                    // Get the workout day type if available
+                    const workoutDayTypes = [...new Set(workouts.map(w => w.workoutDay).filter(Boolean))];
+                    const dayLabel = workoutDayTypes.length > 0 ? workoutDayTypes.join(', ') : 'Workout';
+
+                    const workoutItems = workouts.map(workout => {
+                        const time = new Date(workout.date);
+                        const timeStr = time.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+                        const volume = workout.weight * workout.sets * workout.reps;
+
+                        return `
+                            <div class="workout-item">
+                                <div class="workout-header">
+                                    <div class="exercise-name">${workout.exercise}</div>
+                                    <div class="workout-time">${timeStr}</div>
+                                </div>
+                                <div class="workout-details">
+                                    <div class="detail-item">
+                                        <span class="detail-label">Weight:</span> ${workout.weight} kg
+                                    </div>
+                                    <div class="detail-item">
+                                        <span class="detail-label">Sets:</span> ${workout.sets}
+                                    </div>
+                                    <div class="detail-item">
+                                        <span class="detail-label">Reps:</span> ${workout.reps}
+                                    </div>
+                                    <div class="detail-item">
+                                        <span class="detail-label">Volume:</span> ${volume.toLocaleString()} kg
+                                    </div>
+                                </div>
+                                <button class="delete-btn" onclick="tracker.deleteWorkout(${workout.id})">Delete</button>
+                            </div>
+                        `;
+                    }).join('');
+
+                    return `
+                        <div class="day-group">
+                            <div class="day-header">
+                                <div class="day-title">${dayLabel}</div>
+                                <div class="day-date">${formattedDate}</div>
+                            </div>
+                            ${workoutItems}
+                        </div>
+                    `;
+                }).join('') + '<button class="button clear-all-btn" onclick="tracker.clearAll()">Clear All History</button>';
+            }
+
+            attachEventListeners() {
+                document.getElementById('workoutForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const exercise = document.getElementById('exercise').value;
+                    const weight = document.getElementById('weight').value;
+                    const sets = document.getElementById('sets').value;
+                    const reps = document.getElementById('reps').value;
+                    const workoutDay = document.getElementById('workoutDay').value;
+                    
+                    this.addWorkout(exercise, weight, sets, reps, workoutDay);
+                    e.target.reset();
+                    document.querySelectorAll('.quick-day-btn').forEach(btn => btn.classList.remove('active'));
+                    document.getElementById('exercise').focus();
+                });
+            }
+        }
+
+        const tracker = new GymTracker();
+    </script>
+</body>
+</html>
