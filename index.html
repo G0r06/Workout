@@ -4,6 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gym Weight Tracker</title>
+    
+    <!-- PWA / iOS Home Screen Settings -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="Gym Tracker">
+    
+    <!-- App Icons for iOS -->
+    <link rel="apple-touch-icon" sizes="180x180" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' fill='%23000'/><text x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-size='80' fill='%23fff'>💪</text></svg>">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23000'/><text x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-size='60' fill='%23fff'>💪</text></svg>">
+    
+    <!-- Theme color for browser -->
+    <meta name="theme-color" content="#000000">
+    
     <style>
         * {
             margin: 0;
@@ -13,7 +26,7 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #1a1a1a;
             min-height: 100vh;
             padding: 20px;
         }
@@ -32,7 +45,7 @@
         }
 
         h1 {
-            color: #667eea;
+            color: #000;
             font-size: 32px;
             margin-bottom: 10px;
         }
@@ -50,8 +63,8 @@
 
         .tab {
             background: white;
-            color: #667eea;
-            border: none;
+            color: #333;
+            border: 2px solid #e0e0e0;
             padding: 12px 24px;
             border-radius: 10px;
             font-size: 16px;
@@ -62,8 +75,9 @@
         }
 
         .tab.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #000;
             color: white;
+            border-color: #000;
         }
 
         .tab:hover:not(.active) {
@@ -109,7 +123,7 @@
 
         input:focus, select:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: #000;
         }
 
         .input-group {
@@ -119,7 +133,7 @@
         }
 
         button {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #000;
             color: white;
             border: none;
             padding: 14px 28px;
@@ -133,7 +147,7 @@
 
         button:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
         }
 
         button:active {
@@ -152,7 +166,7 @@
         }
 
         .day-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #000;
             color: white;
             padding: 15px 20px;
             border-radius: 10px;
@@ -177,7 +191,7 @@
             padding: 15px;
             border-radius: 10px;
             margin-bottom: 10px;
-            border-left: 4px solid #667eea;
+            border-left: 4px solid #000;
         }
 
         .workout-header {
@@ -212,11 +226,11 @@
 
         .detail-label {
             font-weight: 600;
-            color: #667eea;
+            color: #000;
         }
 
         .delete-btn {
-            background: #dc3545;
+            background: #666;
             color: white;
             border: none;
             padding: 6px 12px;
@@ -228,7 +242,7 @@
         }
 
         .delete-btn:hover {
-            background: #c82333;
+            background: #444;
             transform: none;
         }
 
@@ -246,7 +260,7 @@
         }
 
         .stat-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #333 0%, #000 100%);
             color: white;
             padding: 20px;
             border-radius: 10px;
@@ -276,11 +290,11 @@
             padding: 20px;
             border-radius: 10px;
             margin-bottom: 20px;
-            border-left: 5px solid #667eea;
+            border-left: 5px solid #000;
         }
 
         .plan-day h3 {
-            color: #667eea;
+            color: #000;
             margin-bottom: 15px;
             font-size: 22px;
         }
@@ -299,7 +313,7 @@
         }
 
         .exercise-table th {
-            background: #667eea;
+            background: #000;
             color: white;
             font-weight: 600;
         }
@@ -309,15 +323,15 @@
         }
 
         .tips-section {
-            background: #fff9e6;
+            background: #f0f0f0;
             padding: 15px;
             border-radius: 8px;
             margin-top: 15px;
-            border-left: 4px solid #ffc107;
+            border-left: 4px solid #666;
         }
 
         .tips-section h4 {
-            color: #f57c00;
+            color: #333;
             margin-bottom: 10px;
         }
 
@@ -334,9 +348,9 @@
         }
 
         .quick-day-btn {
-            background: #e0e7ff;
-            color: #667eea;
-            border: 2px solid #667eea;
+            background: #f0f0f0;
+            color: #333;
+            border: 2px solid #ccc;
             padding: 8px 16px;
             border-radius: 8px;
             font-size: 14px;
@@ -346,13 +360,14 @@
         }
 
         .quick-day-btn:hover {
-            background: #667eea;
-            color: white;
+            background: #e0e0e0;
+            color: #000;
         }
 
         .quick-day-btn.active {
-            background: #667eea;
+            background: #000;
             color: white;
+            border-color: #000;
         }
 
         .clear-all-btn {
@@ -361,21 +376,23 @@
         }
 
         .notification-banner {
-            background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+            background: #e0e0e0;
             color: #333;
             padding: 15px 20px;
             border-radius: 10px;
             margin-bottom: 20px;
-            box-shadow: 0 5px 15px rgba(255, 193, 7, 0.3);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
             display: flex;
             align-items: center;
             gap: 15px;
             animation: slideIn 0.3s ease-out;
+            border-left: 4px solid #666;
         }
 
         .notification-banner.success {
-            background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+            background: #000;
             color: white;
+            border-left: 4px solid #fff;
         }
 
         .notification-icon {
