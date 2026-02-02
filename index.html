@@ -289,6 +289,67 @@
             margin-right: 5px;
         }
 
+        .last-weight-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #000;
+            margin-bottom: 10px;
+        }
+
+        .last-weight-exercise {
+            font-weight: 700;
+            font-size: 16px;
+            color: #000;
+            margin-bottom: 8px;
+        }
+
+        .last-weight-details {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 10px;
+        }
+
+        .weight-suggestion {
+            background: #000;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 13px;
+            display: inline-block;
+            margin-top: 5px;
+        }
+
+        .weight-suggestion.same {
+            background: #666;
+        }
+
+        .quick-weight-btns {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .quick-weight-btn {
+            background: #000;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            font-size: 13px;
+            cursor: pointer;
+            width: auto;
+        }
+
+        .quick-weight-btn:hover {
+            background: #333;
+            transform: translateY(-1px);
+        }
+
         .empty-state {
             text-align: center;
             padding: 40px;
@@ -536,6 +597,12 @@
 
         <div id="trackTab" class="tab-content active">
             <div id="notificationArea"></div>
+            
+            <div id="lastWeightDisplay" style="display: none;" class="add-section">
+                <h3 style="color: #333; margin-bottom: 15px;">📊 Previous Performance</h3>
+                <div id="lastWeightContent"></div>
+            </div>
+            
             <div class="add-section">
                 <h2 style="margin-bottom: 20px; color: #333;">Add Workout</h2>
                 <div class="quick-add-buttons">
@@ -869,6 +936,9 @@
                         input.className = exerciseSelect.className;
                         exerciseSelect.parentNode.replaceChild(input, exerciseSelect);
                     }
+                    
+                    // Hide last weight display
+                    document.getElementById('lastWeightDisplay').style.display = 'none';
                 } else if (this.exerciseLists[day]) {
                     // Add placeholder option
                     const placeholderOption = document.createElement('option');
@@ -883,7 +953,62 @@
                         option.textContent = exercise;
                         exerciseSelect.appendChild(option);
                     });
+                    
+                    // Hide last weight display initially
+                    document.getElementById('lastWeightDisplay').style.display = 'none';
                 }
+            }
+
+            showLastWeight(exerciseName) {
+                if (!exerciseName) {
+                    document.getElementById('lastWeightDisplay').style.display = 'none';
+                    return;
+                }
+
+                // Find the last workout for this exercise
+                const lastWorkout = this.workouts.find(w => 
+                    w.exercise.toLowerCase() === exerciseName.toLowerCase()
+                );
+
+                if (!lastWorkout) {
+                    document.getElementById('lastWeightDisplay').style.display = 'none';
+                    return;
+                }
+
+                const lastWeight = lastWorkout.weight;
+                const sameWeight = lastWeight;
+                const nextWeight = lastWeight + 2.5;
+                const previousWeight = Math.max(0, lastWeight - 2.5);
+
+                const lastDate = new Date(lastWorkout.date);
+                const dateStr = lastDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+                const displayDiv = document.getElementById('lastWeightDisplay');
+                const contentDiv = document.getElementById('lastWeightContent');
+
+                contentDiv.innerHTML = `
+                    <div class="last-weight-info">
+                        <div class="last-weight-exercise">${exerciseName}</div>
+                        <div class="last-weight-details">
+                            <span><strong>Last time:</strong> ${lastWeight} kg × ${lastWorkout.sets} sets × ${lastWorkout.reps} reps</span>
+                            <span><strong>Date:</strong> ${dateStr}</span>
+                        </div>
+                        <div class="weight-suggestion">💡 Suggested: Try ${nextWeight} kg (progressive overload)</div>
+                        <div class="weight-suggestion same">Or stay at ${sameWeight} kg if still challenging</div>
+                        <div class="quick-weight-btns">
+                            <button class="quick-weight-btn" onclick="tracker.setWeight(${previousWeight})">${previousWeight} kg</button>
+                            <button class="quick-weight-btn" onclick="tracker.setWeight(${sameWeight})">${sameWeight} kg (same)</button>
+                            <button class="quick-weight-btn" onclick="tracker.setWeight(${nextWeight})">${nextWeight} kg (+2.5)</button>
+                        </div>
+                    </div>
+                `;
+
+                displayDiv.style.display = 'block';
+            }
+
+            setWeight(weight) {
+                document.getElementById('weight').value = weight;
+                document.getElementById('weight').focus();
             }
 
             addWorkout(exercise, weight, sets, reps, workoutDay) {
@@ -1200,6 +1325,13 @@
                     this.updateExerciseList(e.target.value);
                 });
                 
+                // Listen for exercise selection to show last weight
+                document.addEventListener('change', (e) => {
+                    if (e.target.id === 'exercise' && e.target.tagName === 'SELECT') {
+                        this.showLastWeight(e.target.value);
+                    }
+                });
+                
                 document.getElementById('workoutForm').addEventListener('submit', (e) => {
                     e.preventDefault();
                     
@@ -1220,6 +1352,9 @@
                     if (exerciseSelect.tagName === 'SELECT') {
                         exerciseSelect.innerHTML = '<option value="">Select workout day first</option>';
                     }
+                    
+                    // Hide last weight display
+                    document.getElementById('lastWeightDisplay').style.display = 'none';
                     
                     document.querySelectorAll('.quick-day-btn').forEach(btn => btn.classList.remove('active'));
                     document.getElementById('workoutDay').focus();
