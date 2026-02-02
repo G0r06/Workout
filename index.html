@@ -246,6 +246,49 @@
             transform: none;
         }
 
+        .expand-btn {
+            background: #000;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 5px;
+            font-size: 12px;
+            cursor: pointer;
+            margin-top: 10px;
+            margin-right: 10px;
+            width: auto;
+        }
+
+        .expand-btn:hover {
+            background: #333;
+            transform: none;
+        }
+
+        .set-history {
+            margin-top: 15px;
+            padding: 10px;
+            background: #fff;
+            border-radius: 5px;
+            border-left: 3px solid #ccc;
+        }
+
+        .set-history-item {
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 13px;
+            color: #666;
+        }
+
+        .set-history-item:last-child {
+            border-bottom: none;
+        }
+
+        .set-history-label {
+            font-weight: 600;
+            color: #333;
+            margin-right: 5px;
+        }
+
         .empty-state {
             text-align: center;
             padding: 40px;
@@ -393,6 +436,12 @@
             background: #000;
             color: white;
             border-left: 4px solid #fff;
+        }
+
+        .notification-banner.info {
+            background: #f0f0f0;
+            color: #333;
+            border-left: 4px solid #000;
         }
 
         .notification-icon {
@@ -838,22 +887,69 @@
             }
 
             addWorkout(exercise, weight, sets, reps, workoutDay) {
-                const workout = {
-                    id: Date.now(),
-                    exercise: exercise,
-                    weight: parseFloat(weight),
-                    sets: parseInt(sets),
-                    reps: parseInt(reps),
-                    workoutDay: workoutDay,
-                    date: new Date().toISOString()
-                };
-                this.workouts.unshift(workout);
-                this.saveWorkouts();
+                const now = new Date();
+                const todayDate = now.toDateString();
                 
-                // Check for progressive overload opportunity
-                this.checkProgressiveOverload(exercise, weight, sets, reps);
+                // Check if there's already an entry for this exercise with same weight today
+                const existingWorkoutIndex = this.workouts.findIndex(w => {
+                    const workoutDate = new Date(w.date).toDateString();
+                    return workoutDate === todayDate && 
+                           w.exercise.toLowerCase() === exercise.toLowerCase() && 
+                           w.weight === parseFloat(weight);
+                });
                 
-                this.render();
+                if (existingWorkoutIndex !== -1) {
+                    // Initialize setHistory if it doesn't exist
+                    if (!this.workouts[existingWorkoutIndex].setHistory) {
+                        this.workouts[existingWorkoutIndex].setHistory = [{
+                            sets: this.workouts[existingWorkoutIndex].sets,
+                            reps: this.workouts[existingWorkoutIndex].reps,
+                            time: this.workouts[existingWorkoutIndex].date
+                        }];
+                    }
+                    
+                    // Add new set entry to history
+                    this.workouts[existingWorkoutIndex].setHistory.push({
+                        sets: parseInt(sets),
+                        reps: parseInt(reps),
+                        time: now.toISOString()
+                    });
+                    
+                    // Combine total sets
+                    this.workouts[existingWorkoutIndex].sets += parseInt(sets);
+                    
+                    // Update the timestamp to the most recent
+                    this.workouts[existingWorkoutIndex].date = now.toISOString();
+                    
+                    this.saveWorkouts();
+                    this.render();
+                    
+                    // Show a notification that sets were combined
+                    this.showNotification(
+                        '✅ Sets Combined!',
+                        `Added ${sets} sets to ${exercise}. Total: ${this.workouts[existingWorkoutIndex].sets} sets`,
+                        'info'
+                    );
+                } else {
+                    // Create new workout entry
+                    const workout = {
+                        id: Date.now(),
+                        exercise: exercise,
+                        weight: parseFloat(weight),
+                        sets: parseInt(sets),
+                        reps: parseInt(reps),
+                        workoutDay: workoutDay,
+                        date: now.toISOString(),
+                        setHistory: null // No history for first entry
+                    };
+                    this.workouts.unshift(workout);
+                    this.saveWorkouts();
+                    
+                    // Check for progressive overload opportunity
+                    this.checkProgressiveOverload(exercise, weight, sets, reps);
+                    
+                    this.render();
+                }
             }
 
             checkProgressiveOverload(currentExercise, currentWeight, currentSets, currentReps) {
@@ -906,6 +1002,19 @@
                 this.workouts = this.workouts.filter(w => w.id !== id);
                 this.saveWorkouts();
                 this.render();
+            }
+
+            toggleHistory(id) {
+                const historyDiv = document.getElementById(`history-${id}`);
+                const button = event.target;
+                
+                if (historyDiv.style.display === 'none') {
+                    historyDiv.style.display = 'block';
+                    button.textContent = 'Hide Details';
+                } else {
+                    historyDiv.style.display = 'none';
+                    button.textContent = 'Show Details';
+                }
             }
 
             clearAll() {
@@ -1020,11 +1129,36 @@
                         const time = new Date(workout.date);
                         const timeStr = time.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
                         const volume = workout.weight * workout.sets * workout.reps;
+                        
+                        // Check if this workout has combined sets
+                        const hasCombinedSets = workout.setHistory && workout.setHistory.length > 0;
+                        const combinedLabel = hasCombinedSets ? ` (${workout.setHistory.length + 1} entries)` : '';
+                        
+                        // Generate set history HTML if available
+                        let setHistoryHTML = '';
+                        if (hasCombinedSets) {
+                            const historyItems = workout.setHistory.map((entry, index) => {
+                                const entryTime = new Date(entry.time);
+                                const entryTimeStr = entryTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+                                return `
+                                    <div class="set-history-item">
+                                        <span class="set-history-label">Entry ${index + 1}:</span>
+                                        ${entry.sets} sets × ${entry.reps} reps at ${entryTimeStr}
+                                    </div>
+                                `;
+                            }).join('');
+                            
+                            setHistoryHTML = `
+                                <div class="set-history" id="history-${workout.id}" style="display: none;">
+                                    ${historyItems}
+                                </div>
+                            `;
+                        }
 
                         return `
                             <div class="workout-item">
                                 <div class="workout-header">
-                                    <div class="exercise-name">${workout.exercise}</div>
+                                    <div class="exercise-name">${workout.exercise}${combinedLabel}</div>
                                     <div class="workout-time">${timeStr}</div>
                                 </div>
                                 <div class="workout-details">
@@ -1041,6 +1175,8 @@
                                         <span class="detail-label">Volume:</span> ${volume.toLocaleString()} kg
                                     </div>
                                 </div>
+                                ${setHistoryHTML}
+                                ${hasCombinedSets ? `<button class="expand-btn" onclick="tracker.toggleHistory(${workout.id})">Show Details</button>` : ''}
                                 <button class="delete-btn" onclick="tracker.deleteWorkout(${workout.id})">Delete</button>
                             </div>
                         `;
