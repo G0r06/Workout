@@ -508,7 +508,9 @@
                     </div>
                     <div class="form-group">
                         <label for="exercise">Exercise</label>
-                        <input type="text" id="exercise" placeholder="e.g., Bench Press, Squat" required>
+                        <select id="exercise" required>
+                            <option value="">Select workout day first</option>
+                        </select>
                     </div>
                     <div class="input-group">
                         <div class="form-group">
@@ -733,6 +735,49 @@
             constructor() {
                 this.workouts = this.loadWorkouts();
                 this.currentTab = 'track';
+                
+                // Exercise lists for each day
+                this.exerciseLists = {
+                    'Day A': [
+                        'Bench Press',
+                        'Dumbbell Press',
+                        'Overhead Press',
+                        'Incline Dumbbell Press',
+                        'Goblet Squats',
+                        'Dumbbell Squats',
+                        'Lunges (Walking)',
+                        'Lunges (Stationary)',
+                        'Lateral Raises',
+                        'Plank'
+                    ],
+                    'Day B': [
+                        'Pull-Ups',
+                        'Assisted Pull-Ups',
+                        'Barbell Rows',
+                        'Dumbbell Rows',
+                        'Face Pulls',
+                        'Rear Delt Fly',
+                        'Romanian Deadlifts',
+                        'Calf Raises',
+                        'Bicep Curls',
+                        'Hammer Curls',
+                        'Russian Twists'
+                    ],
+                    'Day C': [
+                        'Pull-Ups',
+                        'Chin-Ups',
+                        'Bench Press',
+                        'Dumbbell Press',
+                        'Overhead Press',
+                        'Barbell Rows',
+                        'Dumbbell Rows',
+                        'Goblet Squats',
+                        'Lateral Raises',
+                        'Hanging Leg Raises',
+                        'Lying Leg Raises'
+                    ]
+                };
+                
                 this.render();
                 this.attachEventListeners();
             }
@@ -748,9 +793,48 @@
 
             selectDay(day) {
                 document.getElementById('workoutDay').value = day;
+                this.updateExerciseList(day);
                 const buttons = document.querySelectorAll('.quick-day-btn');
                 buttons.forEach(btn => btn.classList.remove('active'));
                 event.target.classList.add('active');
+            }
+
+            updateExerciseList(day) {
+                const exerciseSelect = document.getElementById('exercise');
+                exerciseSelect.innerHTML = '';
+                
+                if (day === 'Custom' || day === '') {
+                    // For custom, show a text input instead
+                    const option = document.createElement('option');
+                    option.value = '';
+                    option.textContent = day === '' ? 'Select workout day first' : 'Type custom exercise name';
+                    exerciseSelect.appendChild(option);
+                    
+                    if (day === 'Custom') {
+                        // Convert select to input for custom exercises
+                        const input = document.createElement('input');
+                        input.type = 'text';
+                        input.id = 'exercise';
+                        input.placeholder = 'e.g., Bench Press, Squat';
+                        input.required = true;
+                        input.className = exerciseSelect.className;
+                        exerciseSelect.parentNode.replaceChild(input, exerciseSelect);
+                    }
+                } else if (this.exerciseLists[day]) {
+                    // Add placeholder option
+                    const placeholderOption = document.createElement('option');
+                    placeholderOption.value = '';
+                    placeholderOption.textContent = 'Select exercise';
+                    exerciseSelect.appendChild(placeholderOption);
+                    
+                    // Add exercises for this day
+                    this.exerciseLists[day].forEach(exercise => {
+                        const option = document.createElement('option');
+                        option.value = exercise;
+                        option.textContent = exercise;
+                        exerciseSelect.appendChild(option);
+                    });
+                }
             }
 
             addWorkout(exercise, weight, sets, reps, workoutDay) {
@@ -975,9 +1059,18 @@
             }
 
             attachEventListeners() {
+                // Listen for workout day changes
+                document.getElementById('workoutDay').addEventListener('change', (e) => {
+                    this.updateExerciseList(e.target.value);
+                });
+                
                 document.getElementById('workoutForm').addEventListener('submit', (e) => {
                     e.preventDefault();
-                    const exercise = document.getElementById('exercise').value;
+                    
+                    // Get exercise value (could be select or input depending on Custom mode)
+                    const exerciseElement = document.getElementById('exercise');
+                    const exercise = exerciseElement.value;
+                    
                     const weight = document.getElementById('weight').value;
                     const sets = document.getElementById('sets').value;
                     const reps = document.getElementById('reps').value;
@@ -985,8 +1078,15 @@
                     
                     this.addWorkout(exercise, weight, sets, reps, workoutDay);
                     e.target.reset();
+                    
+                    // Reset exercise dropdown
+                    const exerciseSelect = document.getElementById('exercise');
+                    if (exerciseSelect.tagName === 'SELECT') {
+                        exerciseSelect.innerHTML = '<option value="">Select workout day first</option>';
+                    }
+                    
                     document.querySelectorAll('.quick-day-btn').forEach(btn => btn.classList.remove('active'));
-                    document.getElementById('exercise').focus();
+                    document.getElementById('workoutDay').focus();
                 });
             }
         }
